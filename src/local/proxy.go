@@ -1,83 +1,123 @@
 package local
 
 import (
+	"bytes"
 	"fmt"
 	"io"
-	"main/utils/data"
+	"main/geo"
+	"main/utils/data_crypt"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 )
 
 type MyProxy struct {
-	conn       net.Conn
-	hostname   string
-	port       int
-	allSrcData []byte
-	sslFlag    bool
+	connSrc    net.Conn
 	remoteIP   string
 	remotePort int
+	hostname   string
+	port       int
 	connDst    net.Conn
 }
 
-func NewMyProxy(conn net.Conn, hostname string, port int, allSrcData []byte, sslFlag bool, remoteID int) *MyProxy {
+func NewMyProxy(conn net.Conn, remoteIP string, remotePort int) *MyProxy {
 	return &MyProxy{
-		conn:       conn,
-		hostname:   hostname,
-		port:       port,
-		allSrcData: allSrcData,
-		sslFlag:    sslFlag,
-		remoteIP:   GetRemoteIP(remoteID),   // 假设有获取远程 IP 的函数
-		remotePort: GetRemotePort(remoteID), // 假设有获取远程端口的函数
+		connSrc:    conn,
+		remoteIP:   remoteIP,
+		remotePort: remotePort,
 	}
 }
 
 func (p *MyProxy) Start() {
-	allDstData := p.getDataFromProxy(p.allSrcData)
-	if allDstData != nil {
-		p.sslClientServerClientProxy(p.conn, p.connDst, allDstData)
-	} else {
-		p.conn.Close()
+	// 获取目标主机信息
+	allSrcData, hostname, port, sslFlag := p.getDstHostFromHeader()
+	p.hostname = hostname
+	p.port = port
+
+	if !strings.Contains(hostname, ".") {
+		// fmt.Printf("ERR url: %s\n", hostname)
+		err := p.connSrc.Close()
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	opt := geo.GeoIP(hostname)
+	switch opt {
+	case 0:
+		// fmt.Printf("%s : 0断开\n", hostname)
+		err := p.connSrc.Close()
+		if err != nil {
+			return
+		}
+		return
+	case 2:
+		// 启动代理
+		p.getDate(allSrcData)
+		return
+	default:
+		// fmt.Printf("%s : 1直连\n", hostname)
+		go func() {
+			host := NewMyHost(p.connSrc, hostname, port, allSrcData, sslFlag)
+			host.Start()
+		}()
 	}
 }
 
-func (p *MyProxy) getDataFromProxy(sdata []byte) []byte {
+func (p *MyProxy) getDate(allSrcData []byte) {
+	allDstData := p.getDataFromProxy(allSrcData)
+	if allDstData != nil {
+		p.sslClientServerClientProxy(p.connSrc, p.connDst, allDstData)
+	} else {
+		err := p.connSrc.Close()
+		if err != nil {
+			return
+		}
+	}
+}
+
+func (p *MyProxy) getDataFromProxy(srcData []byte) []byte {
 	var err error
 	p.connDst, err = net.Dial("tcp", fmt.Sprintf("%s:%d", p.remoteIP, p.remotePort))
 	if err != nil {
-		//fmt.Printf("getDataFromProxy: cannot connect host: %s\n", p.hostname)
+		// fmt.Printf("getDataFromProxy: cannot connect host: %s\n", p.hostname)
 		return nil
 	}
 
 	// 加密数据
-	sdata = data.UpCompressHeader(sdata)
+	srcData = data_crypt.UpCompressHeader(srcData, cfg.CommonConf.Crypt)
 
-	_, err = p.connDst.Write(sdata)
+	_, err = p.connDst.Write(srcData)
 	if err != nil {
-		fmt.Printf("getDataFromProxy sendall: %v\n", err)
-		p.connDst.Close()
+		// fmt.Printf("getDataFromProxy send all: %v\n", err)
+		err := p.connDst.Close()
+		if err != nil {
+			return nil
+		}
 		return nil
 	}
 
 	buff := make([]byte, 4096)
 	n, err := p.connDst.Read(buff)
 	if err != nil && err != io.EOF {
-		fmt.Printf("getDataFromProxy recv: %v\n", err)
-		p.connDst.Close()
+		// fmt.Printf("getDataFromProxy receive: %v\n", err)
+		err := p.connDst.Close()
+		if err != nil {
+			return nil
+		}
 		return nil
 	}
 
 	// 解密数据 (这里假设 downDecompress 是解密函数)
-	return data.DownDecompress(buff[:n])
+	return data_crypt.DownDecompress(buff[:n], cfg.CommonConf.Crypt)
 }
 
 func (p *MyProxy) sslClientServerClientProxy(srcConn, dstConn net.Conn, allDstData []byte) {
 	_, err := srcConn.Write(allDstData)
 	if err != nil {
-		fmt.Println("cannot send data to SSL client:", err)
-		return
-	}
-	if srcConn == nil || dstConn == nil {
+		// fmt.Println("cannot send data_crypt to SSL client:", err)
 		return
 	}
 
@@ -102,17 +142,17 @@ func (p *MyProxy) sslClientServerProxy(srcConn, dstConn net.Conn) {
 	for {
 		n, err := srcConn.Read(buff)
 		if err != nil {
-			//fmt.Println("sslClientServerProxy read error:", err)
+			// fmt.Println("sslClientServerProxy read error:", err)
 			p.closeMyChain()
 			return
 		}
 
 		// 加密数据
-		sslClientData := data.UpCompress(buff[:n])
+		sslClientData := data_crypt.UpCompress(buff[:n], cfg.CommonConf.Crypt)
 
 		_, err = dstConn.Write(sslClientData)
 		if err != nil {
-			fmt.Printf("sslClientServerProxy sendall error: %v\n", err)
+			// fmt.Printf("sslClientServerProxy send all error: %v\n", err)
 			p.closeMyChain()
 			return
 		}
@@ -124,17 +164,17 @@ func (p *MyProxy) sslServerClientProxy(srcConn, dstConn net.Conn) {
 	for {
 		n, err := dstConn.Read(buff)
 		if err != nil {
-			//fmt.Println("sslServerClientProxy read error:", err)
+			// fmt.Println("sslServerClientProxy read error:", err)
 			p.closeMyChain()
 			return
 		}
 
 		// 解密数据
-		sslServerData := data.DownDecompress(buff[:n])
+		sslServerData := data_crypt.DownDecompress(buff[:n], cfg.CommonConf.Crypt)
 
 		_, err = srcConn.Write(sslServerData)
 		if err != nil {
-			fmt.Printf("sslServerClientProxy sendall error: %v\n", err)
+			// fmt.Printf("sslServerClientProxy send all error: %v\n", err)
 			p.closeMyChain()
 			return
 		}
@@ -142,41 +182,65 @@ func (p *MyProxy) sslServerClientProxy(srcConn, dstConn net.Conn) {
 }
 
 func (p *MyProxy) checkMyChain() bool {
-	return p.conn != nil && p.connDst != nil
+	return p.connSrc != nil && p.connDst != nil
 }
 
 func (p *MyProxy) closeMyChain() {
-	if p.conn != nil {
-		p.conn.Close()
-	}
-	if p.connDst != nil {
-		p.connDst.Close()
-	}
-}
-
-// 模拟获取远程 IP 和端口的函数
-func GetRemoteIP(remoteID int) string {
-	// 返回模拟 IP
-	ip := cfg.LocalConf.RemoteIPs[remoteID][0]
-	return ip
-}
-
-func GetRemotePort(remoteID int) int {
-	// 返回端口
-	port := cfg.LocalConf.RemoteIPs[remoteID][1]
-	iPort, err := strconv.Atoi(port)
+	err := p.connSrc.Close()
 	if err != nil {
-		return 0
 	}
-	return iPort
+	err = p.connDst.Close()
+	if err != nil {
+	}
 }
 
-func GetRemotePort2(remoteID int) int {
-	// 返回端口
-	port := cfg.LocalConf.RemoteIPs[remoteID][2]
-	iPort, err := strconv.Atoi(port)
-	if err != nil {
-		return 0
+// getDstHostFromHeader 方法，用于解析请求头获取目标主机信息
+func (p *MyProxy) getDstHostFromHeader() ([]byte, string, int, bool) {
+	var header []byte
+	//sslFlag := false
+	for {
+		// 读取头部数据
+		line := make([]byte, cfg.CommonConf.BufferSize)
+		n, err := p.connSrc.Read(line)
+		if err == io.EOF {
+			fmt.Printf("Error reading header2: %v\n", err)
+			return nil, "", 0, false
+		}
+		if err != nil {
+			fmt.Printf("Error reading header: %v\n", err)
+			return nil, "", 0, false
+		}
+
+		if n <= 0 {
+			break
+		}
+
+		line = line[:n]
+
+		header = append(header, line...)
+		firstLine := strings.Split(string(header), "\n")[0]
+		// 检查是否是SSL连接
+		if strings.Contains(firstLine, "CONNECT") {
+			hostname := strings.TrimSpace(strings.Split(firstLine, " ")[1])
+			hostname = strings.TrimSpace(strings.Split(hostname, ":")[0])
+			return header, hostname, 443, true
+		}
+
+		// 检查Host字段
+		hostIndex := bytes.Index(header, []byte("Host:"))
+		if hostIndex > -1 {
+			hostLine := header[hostIndex:]
+			endOfLine := bytes.Index(hostLine, []byte("\n"))
+			host := string(hostLine[5:endOfLine])
+			host = strings.TrimSpace(host)
+
+			if strings.Contains(host, ":") {
+				parts := strings.Split(host, ":")
+				port, _ := strconv.Atoi(parts[1])
+				return header, parts[0], port, false
+			}
+			return header, host, 80, false
+		}
 	}
-	return iPort
+	return nil, "", 0, false
 }

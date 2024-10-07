@@ -14,7 +14,7 @@ var (
 
 func main() {
 	// 0.加载配置文件
-	err := conf.LoadIni(Cfg, "../conf/config.ini")
+	err := conf.LoadIni(Cfg, "../../conf/config.ini")
 	if err != nil {
 		fmt.Printf("load ini faild,err:%v\n", err)
 		return

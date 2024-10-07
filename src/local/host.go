@@ -2,14 +2,14 @@ package local
 
 import (
 	"fmt"
+	"main/utils/netF"
 	"net"
 	"sync"
 	"time"
 )
 
 type MyHost struct {
-	myport     int
-	conn       net.Conn
+	connSrc    net.Conn
 	hostname   string
 	port       int
 	allSrcData []byte
@@ -17,10 +17,9 @@ type MyHost struct {
 	connDst    net.Conn
 }
 
-func NewMyHost(conn net.Conn, hostname string, port int, allSrcData []byte, sslFlag bool, myport int) *MyHost {
+func NewMyHost(conn net.Conn, hostname string, port int, allSrcData []byte, sslFlag bool) *MyHost {
 	return &MyHost{
-		myport:     myport,
-		conn:       conn,
+		connSrc:    conn,
 		hostname:   hostname,
 		port:       port,
 		allSrcData: allSrcData,
@@ -31,16 +30,16 @@ func NewMyHost(conn net.Conn, hostname string, port int, allSrcData []byte, sslF
 func (h *MyHost) Start() {
 	allDstData := h.getDataFromHost(h.allSrcData)
 	if len(allDstData) > 0 && !h.sslFlag {
-		h.sslClientServerClient(h.conn, h.connDst, allDstData)
+		h.sslClientServerClient(h.connSrc, h.connDst, allDstData)
 	} else if h.sslFlag {
 		sampleDataToClient := []byte("HTTP/1.0 200 Connection Established\r\n\r\n")
-		h.sslClientServerClient(h.conn, h.connDst, sampleDataToClient)
+		h.sslClientServerClient(h.connSrc, h.connDst, sampleDataToClient)
 	} else {
 		fmt.Printf("Please check network. Cannot connect to hostname: %s\n", h.hostname)
 	}
 }
 
-func (h *MyHost) getDataFromHost(sdata []byte) []byte {
+func (h *MyHost) getDataFromHost(rcdata []byte) []byte {
 	var err error
 	h.connDst, err = net.DialTimeout("tcp", fmt.Sprintf("%s:%d", h.hostname, h.port), 10*time.Second)
 	if err != nil {
@@ -52,10 +51,10 @@ func (h *MyHost) getDataFromHost(sdata []byte) []byte {
 		return nil
 	}
 
-	_, err = h.connDst.Write(sdata)
+	_, err = h.connDst.Write(rcdata)
 	if err != nil {
 		fmt.Printf("getDataFromHost - sendall : %v\n", err)
-		h.connDst.Close()
+		netF.CloseConnection(h.connDst)
 		return nil
 	}
 
@@ -63,7 +62,7 @@ func (h *MyHost) getDataFromHost(sdata []byte) []byte {
 	n, err := h.connDst.Read(buf)
 	if err != nil {
 		fmt.Printf("getDataFromHost - recv : %v\n", err)
-		h.connDst.Close()
+		netF.CloseConnection(h.connDst)
 		return nil
 	}
 	return buf[:n]
@@ -72,12 +71,7 @@ func (h *MyHost) getDataFromHost(sdata []byte) []byte {
 func (h *MyHost) sslClientServerClient(srcConn net.Conn, dstConn net.Conn, allDstData []byte) {
 	_, err := srcConn.Write(allDstData)
 	if err != nil {
-		//fmt.Printf("ssl_client_server_client - sendall: %v\n", err)
-		return
-	}
-
-	if srcConn == nil || dstConn == nil {
-		//fmt.Println("srcConn == nil || dstConn == nil\n")
+		//fmt.Printf("ssl_client_server_client - send all: %v\n", err)
 		return
 	}
 
@@ -139,16 +133,12 @@ func (h *MyHost) sslServerClient(srcConn net.Conn, dstConn net.Conn) {
 }
 
 func (h *MyHost) closeMyChain() {
-	if h.conn != nil {
-		h.conn.Close()
-	}
-	if h.connDst != nil {
-		h.connDst.Close()
-	}
+	netF.CloseConnection(h.connSrc)
+	netF.CloseConnection(h.connDst)
 }
 
 //func main() {
-//	conn, _ := net.Dial("tcp", "localhost:8080") // Example connection
-//	host := NewMyHost(conn, "example.com", 80, []byte("GET / HTTP/1.1\r\n\r\n"), false, 8080)
+//	conn_src, _ := netF.Dial("tcp", "localhost:8080") // Example connection
+//	host := NewMyHost(conn_src, "example.com", 80, []byte("GET / HTTP/1.1\r\n\r\n"), false, 8080)
 //	host.Start()
 //}

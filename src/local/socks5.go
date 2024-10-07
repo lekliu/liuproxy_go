@@ -2,32 +2,30 @@ package local
 
 import (
 	"fmt"
-	"main/utils/data"
+	"main/utils/data_crypt"
+	"main/utils/netF"
 	"net"
 	"sync"
 )
 
 type MySocks5 struct {
-	connection net.Conn
+	connSrc    net.Conn
 	addr       net.Addr
-	remoteid   int
 	remoteIP   string
 	remotePort int
 	connDst    net.Conn
 }
 
-func NewMySocks5(conn net.Conn, addr net.Addr, remoteid int) *MySocks5 {
+func NewMySocks5(conn net.Conn, addr net.Addr, remoteIP string, remotePort int) *MySocks5 {
 	return &MySocks5{
-		connection: conn,
+		connSrc:    conn,
 		addr:       addr,
-		remoteid:   remoteid,
-		remoteIP:   GetRemoteIP(remoteid),    // 假设有获取远程 IP 的函数
-		remotePort: GetRemotePort2(remoteid), // 假设有获取远程端口的函数
+		remoteIP:   remoteIP,
+		remotePort: remotePort,
 	}
 }
 
 func (s *MySocks5) Start() {
-	// Only supports CONNECT request
 	dstConn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", s.remoteIP, s.remotePort))
 	if err != nil {
 		fmt.Println("Connection error:", err)
@@ -35,14 +33,12 @@ func (s *MySocks5) Start() {
 	}
 	s.connDst = dstConn
 
-	defer dstConn.Close()
-	defer s.connection.Close()
-
-	s.ExchangeData(s.connection, dstConn)
+	defer s.closeMyChain()
+	s.ExchangeData()
 }
 
-func (s *MySocks5) ExchangeData(srcConn, dstConn net.Conn) {
-	if srcConn == nil || dstConn == nil {
+func (s *MySocks5) ExchangeData() {
+	if s.connSrc == nil || s.connDst == nil {
 		return
 	}
 
@@ -51,82 +47,78 @@ func (s *MySocks5) ExchangeData(srcConn, dstConn net.Conn) {
 
 	go func() {
 		defer wg.Done()
-		s.sslClientServerProxy(srcConn, dstConn)
+		s.sslClientServerProxy()
 	}()
 
 	go func() {
 		defer wg.Done()
-		s.sslServerClientProxy(srcConn, dstConn)
+		s.sslServerClientProxy()
 	}()
 
 	wg.Wait()
 }
 
-func (p *MySocks5) sslClientServerProxy(srcConn, dstConn net.Conn) {
+func (s *MySocks5) sslClientServerProxy() {
 	buff := make([]byte, 4096)
 	for {
-		n, err := srcConn.Read(buff)
+		n, err := s.connSrc.Read(buff)
 		if err != nil {
 			//fmt.Println("sslClientServerProxy read error:", err)
-			p.closeMyChain()
+			s.closeMyChain()
 			return
 		}
 
 		// 加密数据
-		sslClientData := data.SocksCompress(buff[:n])
+		sslClientData := data_crypt.SocksCompress(buff[:n], cfg.CommonConf.Crypt)
 
-		_, err = dstConn.Write(sslClientData)
+		_, err = s.connDst.Write(sslClientData)
 		if err != nil {
 			fmt.Printf("sslClientServerProxy sendall error: %v\n", err)
-			p.closeMyChain()
+			s.closeMyChain()
 			return
 		}
 	}
 }
 
-func (p *MySocks5) sslServerClientProxy(srcConn, dstConn net.Conn) {
+func (s *MySocks5) sslServerClientProxy() {
 	buff := make([]byte, 4096)
 	for {
-		n, err := dstConn.Read(buff)
+		n, err := s.connDst.Read(buff)
 		if err != nil {
 			//fmt.Println("sslServerClientProxy read error:", err)
-			p.closeMyChain()
+			s.closeMyChain()
 			return
 		}
 
 		// 解密数据
-		sslServerData := data.SocksDecompress(buff[:n])
-		_, err = srcConn.Write(sslServerData)
+		sslServerData := data_crypt.SocksDecompress(buff[:n], cfg.CommonConf.Crypt)
+		_, err = s.connSrc.Write(sslServerData)
 		if err != nil {
 			fmt.Printf("sslServerClientProxy sendall error: %v\n", err)
-			p.closeMyChain()
+			s.closeMyChain()
 			return
 		}
 	}
 }
-func (p *MySocks5) closeMyChain() {
-	if p.connection != nil {
-		p.connection.Close()
-	}
-	if p.connDst != nil {
-		p.connDst.Close()
-	}
+func (s *MySocks5) closeMyChain() {
+	netF.CloseConnection(s.connSrc)
+	netF.CloseConnection(s.connDst)
 }
 
 //func main() {
 //	// Example usage of the MySocks5
-//	listener, err := net.Listen("tcp", ":1080")
+//	listener, err := netF.Listen("tcp", ":1080")
 //	if err != nil {
 //		fmt.Println("Failed to start server:", err)
 //		os.Exit(1)
 //	}
 //
 //	for {
-//		conn, err := listener.Accept()
+//		conn_src, err := listener.Accept()
 //		if err != nil {
 //			fmt.Println("Failed to accept connection:", err)
 //			continue
 //		}
-//		go NewMySocks5(conn, conn.RemoteAddr(), 0).Start()
+//		go NewMySocks5(conn_src, conn_src.RemoteAddr(), 0).Start()
 //	}
 //}

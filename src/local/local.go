@@ -3,10 +3,9 @@ package local
 import (
 	"fmt"
 	"main/conf"
+	"main/utils/netF"
 	"net"
 )
-
-const SOCKS_VERSION = 5
 
 var (
 	cfg *conf.AppConfig
@@ -29,7 +28,6 @@ func (s *Server) initSocket(host string, port int) {
 
 func (s *Server) start(host string, port int) {
 	s.initSocket(host, port)
-	var remoteID int
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
@@ -38,11 +36,7 @@ func (s *Server) start(host string, port int) {
 		}
 
 		accessHost := AccessToHost{}
-		remoteID = 0
-		if cfg.LocalConf.PortHttpSecond == port {
-			remoteID = 1
-		}
-		go accessHost.Handler(conn, conn.RemoteAddr(), port, remoteID)
+		go accessHost.Handler(conn, conn.RemoteAddr(), port)
 	}
 }
 
@@ -62,13 +56,14 @@ func RunServer(cfg1 *conf.AppConfig) {
 		return
 	}
 	localIP := conn.LocalAddr().(*net.UDPAddr).IP.String()
-	conn.Close()
+	netF.CloseConnection(conn)
 	fmt.Println(localIP)
 
 	// Start server threads
 	go startServerThread(cfg.LocalConf.PortHttpFirst)
+	go startServerThread(cfg.LocalConf.PortSocks5First)
 	go startServerThread(cfg.LocalConf.PortHttpSecond)
-	go startServerThread(cfg.LocalConf.PortSocks5)
+	go startServerThread(cfg.LocalConf.PortSocks5Second)
 
 	// 保持主线程运行
 	select {}

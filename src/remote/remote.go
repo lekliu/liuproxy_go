@@ -3,11 +3,12 @@ package remote
 import (
 	"fmt"
 	"main/conf"
+	"main/utils/netF"
 	"net"
 	"sync"
 )
 
-const SOCKS_VERSION = 5
+const SocksVersion = 5
 
 var (
 	cfg *conf.AppConfig
@@ -36,7 +37,12 @@ func (server *Server) start(host string, port int) {
 		fmt.Println("Error initializing socket:", err)
 		return
 	}
-	defer server.listener.Close()
+	defer func(listener net.Listener) {
+		err := listener.Close()
+		if err != nil {
+
+		}
+	}(server.listener)
 
 	for {
 		conn, err := server.listener.Accept()
@@ -45,7 +51,7 @@ func (server *Server) start(host string, port int) {
 			continue
 		}
 		go func() {
-			accessHost := &ACCESS_HOST{}
+			accessHost := &AccessHost{}
 			// AccessHost struct and handler method
 			accessHost.handler(conn, conn.RemoteAddr(), port)
 		}()
@@ -66,7 +72,7 @@ func RunServer(cfg1 *conf.AppConfig) {
 	var ip string
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err == nil {
-		defer conn.Close()
+		defer netF.CloseConnection(conn)
 		localAddr := conn.LocalAddr().(*net.UDPAddr)
 		ip = localAddr.IP.String()
 	}
@@ -74,7 +80,6 @@ func RunServer(cfg1 *conf.AppConfig) {
 
 	startServerThread(cfg.RemoteConf.PortHttpSvr)
 	startServerThread(cfg.RemoteConf.PortSocks5Svr)
-	startServerThread(cfg.RemoteConf.PortSocks8Svr)
 
 	// 保持主线程运行
 	select {}

@@ -1,0 +1,1 @@
+.\liuproxy.exe -r
