@@ -3,13 +3,14 @@ package remote
 import (
 	"encoding/binary"
 	"fmt"
+	"log"
+	"main/utils/data_crypt"
 	"net"
 	"time"
 )
 
 type MyUdp struct {
 	connSrc net.Conn
-	addr    net.Addr
 }
 
 func NewMyUdp(conn net.Conn) *MyUdp {
@@ -21,101 +22,130 @@ func NewMyUdp(conn net.Conn) *MyUdp {
 func (u *MyUdp) Start() {
 	udpAddr, err := net.ResolveUDPAddr("udp", "0.0.0.0:0")
 	if err != nil {
-		fmt.Println("UDP地址解析错误:", err)
-		u.connSrc.Close()
+		u.handleError("UDP地址解析错误", err)
 		return
 	}
+
 	udpSock, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
-		fmt.Println("UDP监听失败:", err)
-		u.connSrc.Close()
+		u.handleError("UDP监听失败", err)
 		return
 	}
-	defer udpSock.Close()
+	defer func() {
+		if err := udpSock.Close(); err != nil {
+			fmt.Println("关闭UDP连接时出错:", err)
+		}
+	}()
 
 	bindAddress := udpSock.LocalAddr().(*net.UDPAddr)
-	fmt.Printf("UDP Associate: 已绑定UDP地址 %s\n", bindAddress)
+	// fmt.Printf("UDP Associate: 已绑定UDP地址 %s\n", bindAddress)
 
-	reply := []byte{SocksVersion, 0, 0, 1}
-	reply = append(reply, bindAddress.IP.To4()...)
-	portBytes := make([]byte, 2)
-	binary.BigEndian.PutUint16(portBytes, uint16(bindAddress.Port))
-	reply = append(reply, portBytes...)
-
+	// 构建回复报文
+	reply := buildReply(bindAddress)
 	u.SendData(reply)
 
 	if reply[1] == 0 {
 		u.udpRelay(udpSock)
 	}
-	err = u.connSrc.Close()
-	if err != nil {
-		return
-	}
 }
 
 func (u *MyUdp) udpRelay(udpSock *net.UDPConn) {
-	defer udpSock.Close()
 	buffer := make([]byte, 65535)
 	clientAddr := &net.UDPAddr{}
-	udpSock.SetReadDeadline(time.Now().Add(60 * time.Second))
+
+	// 设置超时
+	err := udpSock.SetReadDeadline(time.Now().Add(Timeout))
+	if err != nil {
+		u.handleError("设置超时失败", err)
+		return
+	}
 
 	for {
 		n, addr, err := udpSock.ReadFromUDP(buffer)
 		if err != nil {
-			fmt.Println("UDP Relay 读取失败或超时:", err)
+			u.handleError("UDP Relay 读取失败或超时", err)
 			break
 		}
 
-		// 解析请求
 		rsv := binary.BigEndian.Uint16(buffer[0:2])
-		if rsv == 0 { // UDP客户端发来的UDP数据包
+		if rsv == 0 {
+			// 处理来自客户端的数据
 			clientAddr = addr
-			addressType := buffer[3]
-
-			var targetAddress string
-			var targetPort int
-			var payload []byte
-
-			switch addressType {
-			case 1: // IPv4
-				targetAddress = net.IP(buffer[4:8]).String()
-				targetPort = int(binary.BigEndian.Uint16(buffer[8:10]))
-				payload = buffer[10:n]
-			case 3: // Domain name
-				domainLength := int(buffer[4])
-				targetAddress = string(buffer[5 : 5+domainLength])
-				targetPort = int(binary.BigEndian.Uint16(buffer[5+domainLength : 7+domainLength]))
-				payload = buffer[7+domainLength : n]
+			if err := u.handleClientData(udpSock, buffer[:n]); err != nil {
+				u.handleError("处理客户端数据失败", err)
 			}
-
-			// 转发数据到目标地址
-			targetAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", targetAddress, targetPort))
-			if err != nil {
-				fmt.Println("目标地址解析错误:", err)
-				continue
+		} else {
+			// 处理来自远程服务器的数据
+			if err := u.handleServerData(udpSock, buffer[:n], addr, clientAddr); err != nil {
+				u.handleError("处理服务器数据失败", err)
 			}
-
-			_, err = udpSock.WriteToUDP(payload, targetAddr)
-			if err != nil {
-				fmt.Println("转发到目标地址失败:", err)
-				continue
-			}
-		} else { // 远程UDP服务器返回的数据
-			responseHeader := make([]byte, 10)
-			binary.BigEndian.PutUint16(responseHeader[0:2], 0)
-			responseHeader[2] = 0
-			responseHeader[3] = 1
-			copy(responseHeader[4:], addr.IP.To4())
-			binary.BigEndian.PutUint16(responseHeader[8:], uint16(addr.Port))
-
-			udpSock.WriteToUDP(append(responseHeader, buffer[0:n]...), clientAddr)
 		}
 	}
 }
 
+func (u *MyUdp) handleClientData(udpSock *net.UDPConn, data []byte) error {
+	addressType := data[3]
+	var targetAddress string
+	var targetPort int
+	var payload []byte
+
+	switch addressType {
+	case 1: // IPv4
+		targetAddress = net.IP(data[4:8]).String()
+		targetPort = int(binary.BigEndian.Uint16(data[8:10]))
+		payload = data[10:]
+	case 3: // 域名
+		domainLength := int(data[4])
+		targetAddress = string(data[5 : 5+domainLength])
+		targetPort = int(binary.BigEndian.Uint16(data[5+domainLength : 7+domainLength]))
+		payload = data[7+domainLength:]
+	default:
+		return fmt.Errorf("不支持的地址类型: %d", addressType)
+	}
+
+	targetAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", targetAddress, targetPort))
+	if err != nil {
+		return fmt.Errorf("目标地址解析错误: %w", err)
+	}
+
+	_, err = udpSock.WriteToUDP(payload, targetAddr)
+	return err
+}
+
+func (u *MyUdp) handleServerData(udpSock *net.UDPConn, data []byte, addr *net.UDPAddr, clientAddr *net.UDPAddr) error {
+	responseHeader := make([]byte, 10)
+	binary.BigEndian.PutUint16(responseHeader[0:2], 0)
+	responseHeader[2] = 0
+	responseHeader[3] = 1
+	copy(responseHeader[4:], addr.IP.To4())
+	binary.BigEndian.PutUint16(responseHeader[8:], uint16(addr.Port))
+
+	// fmt.Println(responseHeader)
+	// fmt.Println(data)
+	_, err := udpSock.WriteToUDP(append(responseHeader, data...), clientAddr)
+	return err
+}
+
 func (u *MyUdp) SendData(data []byte) {
+	data = data_crypt.SocksCompress(data, cfg.CommonConf.Crypt)
 	_, err := u.connSrc.Write(data)
 	if err != nil {
-		return
+		u.handleError("发送数据失败", err)
 	}
+}
+
+func (u *MyUdp) handleError(msg string, err error) {
+	log.Printf("%s: %v\n", msg, err)
+	if u.connSrc != nil {
+		_ = u.connSrc.Close()
+	}
+}
+
+func buildReply(bindAddress *net.UDPAddr) []byte {
+	reply := []byte{SocksVersion, 0, 0, 1}
+	reply = append(reply, bindAddress.IP.To4()...)
+	portBytes := make([]byte, 2)
+	binary.BigEndian.PutUint16(portBytes, uint16(bindAddress.Port))
+	reply = append(reply, portBytes...)
+	return reply
 }

@@ -203,11 +203,11 @@ func (p *MyProxy) getDstHostFromHeader() ([]byte, string, int, bool) {
 		line := make([]byte, cfg.CommonConf.BufferSize)
 		n, err := p.connSrc.Read(line)
 		if err == io.EOF {
-			fmt.Printf("Error reading header2: %v\n", err)
+			// fmt.Printf("Error reading header2: %v\n", err)
 			return nil, "", 0, false
 		}
 		if err != nil {
-			fmt.Printf("Error reading header: %v\n", err)
+			// fmt.Printf("Error reading header: %v\n", err)
 			return nil, "", 0, false
 		}
 

@@ -6,9 +6,13 @@ import (
 	"main/utils/netF"
 	"net"
 	"sync"
+	"time"
 )
 
-const SocksVersion = 5
+const (
+	SocksVersion = 5
+	Timeout      = 60 * time.Second
+)
 
 var (
 	cfg *conf.AppConfig

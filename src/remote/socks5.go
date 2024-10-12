@@ -22,12 +22,13 @@ func NewMySocks5(conn net.Conn) *MySocks5 {
 
 func (sock *MySocks5) Start() {
 	// 客户端认证请求
-	header := sock.ReceiveDataCrypt(3)
-	if len(header) == 0 {
+	headerlen := len(data_crypt.Header)
+	header := sock.ReceiveDataCrypt(3 + headerlen)
+	if len(header) < headerlen+3 {
 		netF.CloseConnWithInfo(sock.connSrc, "空Header")
 		return
 	}
-
+	header = header[headerlen:]
 	version := header[0]
 	nMethods := header[1]
 	method := header[2]

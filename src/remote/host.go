@@ -198,6 +198,7 @@ func (h *MyHost) getDstHostFromHeader() ([]byte, string, int, bool) {
 		}
 		line = line[:n]
 		header = append(header, line...)
+		// fmt.Printf("crypt:%d header:%+v \n", cfg.CommonConf.Crypt, header)
 		header = data.UpDecompressHeader(header, cfg.CommonConf.Crypt)
 
 		if len(header) > 0 {
@@ -211,18 +212,24 @@ func (h *MyHost) getDstHostFromHeader() ([]byte, string, int, bool) {
 
 			// 检查是否包含Host
 			hostIndex := bytes.Index(header, []byte("Host:"))
+			//fmt.Println(string(header))
+			//GET http://5g.people.cn/background.png HTTP/1.1
+			//Host: 5g.people.cn
+			//Proxy-Connection: keep-alive
+			//...
 			if hostIndex > -1 {
 				hostLine := header[hostIndex:]
 				endOfLine := bytes.Index(hostLine, []byte("\n"))
+				if endOfLine < 5 {
+					return nil, "", 0, false
+				}
 				host := string(hostLine[5:endOfLine])
 				host = strings.TrimSpace(host)
-
 				if strings.Contains(host, ":") {
 					parts := strings.Split(host, ":")
 					port, _ := strconv.Atoi(parts[1])
 					return header, parts[0], port, false
 				}
-
 				return header, host, 80, false
 			}
 		}

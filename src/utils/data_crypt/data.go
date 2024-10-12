@@ -1,5 +1,7 @@
 package data_crypt
 
+var Header = []byte("GET / HTTP/1.1\r\nHost: 43.128.59.144:443\r\nConnection: keep-alive\r\nUser-Agent: Mozilla/5.0 (Windows NT 6.1)\r\nAccept: text/html\r\n")
+
 // DownCompress compresses and encrypts the data_crypt for "downstream"
 func DownCompress(data []byte, cryptno int) []byte {
 	return encrypt(data, cryptno)
@@ -25,14 +27,16 @@ func UpDecompress(data []byte, cryptno int) []byte {
 
 // UpCompressHeader compresses the header and encrypts the data_crypt for "upstream"
 func UpCompressHeader(data []byte, cryptno int) []byte {
-	header := []byte("GET / HTTP/1.1\r\nHost: 43.128.59.144:443\r\nConnection: keep-alive\r\nUpgrade-Insecure-Requests: 1\r\nUser-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64)\r\nAccept: text/html\r\n\r\n")
 	data = encrypt(data, cryptno)
-	return append(header, data...)
+	return append(Header, data...)
 }
 
 // UpDecompressHeader decrypts the header and decompresses the data_crypt for "upstream"
 func UpDecompressHeader(data []byte, cryptno int) []byte {
-	headerLen := len("GET / HTTP/1.1\r\nHost: 43.128.59.144:443\r\nConnection: keep-alive\r\nUpgrade-Insecure-Requests: 1\r\nUser-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64)\r\nAccept: text/html\r\n\r\n")
+	headerLen := len(Header)
+	if len(data) <= headerLen {
+		return []byte{}
+	}
 	data = decrypt(data[headerLen:], cryptno)
 	return data
 }

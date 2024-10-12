@@ -33,6 +33,19 @@ func (s *MySocks5) Start() {
 	}
 	s.connDst = dstConn
 
+	header := s.ReceiveData(3)
+	if len(header) == 0 {
+		netF.CloseConnWithInfo(s.connSrc, "空Header")
+		return
+	}
+	header = data_crypt.UpCompressHeader(header, cfg.CommonConf.Crypt)
+	_, err = s.connDst.Write(header)
+	if err != nil {
+		fmt.Printf("socks5.go 44 error: %v\n", err)
+		s.closeMyChain()
+		return
+	}
+
 	defer s.closeMyChain()
 	s.ExchangeData()
 }
@@ -103,6 +116,15 @@ func (s *MySocks5) sslServerClientProxy() {
 func (s *MySocks5) closeMyChain() {
 	netF.CloseConnection(s.connSrc)
 	netF.CloseConnection(s.connDst)
+}
+
+func (s *MySocks5) ReceiveData(length int) []byte {
+	buf := make([]byte, length)
+	_, err := s.connSrc.Read(buf)
+	if err != nil {
+		return nil
+	}
+	return buf
 }
 
 //func main() {

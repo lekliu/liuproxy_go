@@ -20,8 +20,6 @@ func main() {
 		return
 	}
 
-	// fmt.Printf("%#v\n", cfg)
-
 	//1. 启动服务
 	// 定义 -c 和 -s 参数，用于选择执行 client 或 server
 	localMode := flag.Bool("l", false, "Run as local proxy server")
@@ -42,3 +40,14 @@ func main() {
 	// 保持主线程运行
 	select {}
 }
+
+//func main() {
+//	err := conf.LoadIni(Cfg, "../conf/config.ini")
+//	if err != nil {
+//		fmt.Printf("load ini faild,err:%v\n", err)
+//		return
+//	}
+//	fmt.Println(Cfg)
+//	remote.RunServer(Cfg)
+//	select {}
+//}
