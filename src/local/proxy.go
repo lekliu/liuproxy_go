@@ -18,14 +18,16 @@ type MyProxy struct {
 	remotePort int
 	hostname   string
 	port       int
+	flag       int
 	connDst    net.Conn
 }
 
-func NewMyProxy(conn net.Conn, remoteIP string, remotePort int) *MyProxy {
+func NewMyProxy(conn net.Conn, remoteIP string, remotePort int, flag int) *MyProxy {
 	return &MyProxy{
 		connSrc:    conn,
 		remoteIP:   remoteIP,
 		remotePort: remotePort,
+		flag:       flag,
 	}
 }
 
@@ -87,7 +89,9 @@ func (p *MyProxy) getDataFromProxy(srcData []byte) []byte {
 	}
 
 	// 加密数据
-	srcData = data_crypt.UpCompressHeader(srcData, cfg.CommonConf.Crypt)
+	if p.flag == 1 {
+		srcData = data_crypt.UpCompressHeader(srcData, cfg.CommonConf.Crypt)
+	}
 
 	_, err = p.connDst.Write(srcData)
 	if err != nil {
@@ -111,11 +115,23 @@ func (p *MyProxy) getDataFromProxy(srcData []byte) []byte {
 	}
 
 	// 解密数据 (这里假设 downDecompress 是解密函数)
-	return data_crypt.DownDecompress(buff[:n], cfg.CommonConf.Crypt)
+	buff = buff[:n]
+	if p.flag == 1 {
+		return data_crypt.DownDecompress(buff, cfg.CommonConf.Crypt)
+	} else {
+		return buff
+	}
 }
 
 func (p *MyProxy) sslClientServerClientProxy(srcConn, dstConn net.Conn, allDstData []byte) {
-	_, err := srcConn.Write(allDstData)
+	var err error
+	if p.flag == 1 {
+		_, err = srcConn.Write(allDstData)
+	} else {
+		allDstData = data_crypt.DownCompress(allDstData, cfg.CommonConf.Crypt)
+		_, err = dstConn.Write(allDstData)
+	}
+
 	if err != nil {
 		// fmt.Println("cannot send data_crypt to SSL client:", err)
 		return
@@ -126,21 +142,29 @@ func (p *MyProxy) sslClientServerClientProxy(srcConn, dstConn net.Conn, allDstDa
 
 	go func() {
 		defer wg.Done()
-		p.sslClientServerProxy(srcConn, dstConn)
+		if p.flag == 1 {
+			p.sslProxy_none_crypt(srcConn, dstConn)
+		} else {
+			p.sslProxy_crypt_none(srcConn, dstConn)
+		}
 	}()
 
 	go func() {
 		defer wg.Done()
-		p.sslServerClientProxy(srcConn, dstConn)
+		if p.flag == 1 {
+			p.sslProxy_crypt_none(dstConn, srcConn)
+		} else {
+			p.sslProxy_none_crypt(dstConn, srcConn)
+		}
 	}()
 
 	wg.Wait()
 }
 
-func (p *MyProxy) sslClientServerProxy(srcConn, dstConn net.Conn) {
+func (p *MyProxy) sslProxy_none_crypt(conn1, conn2 net.Conn) {
 	buff := make([]byte, 4096)
 	for {
-		n, err := srcConn.Read(buff)
+		n, err := conn1.Read(buff)
 		if err != nil {
 			// fmt.Println("sslClientServerProxy read error:", err)
 			p.closeMyChain()
@@ -150,7 +174,7 @@ func (p *MyProxy) sslClientServerProxy(srcConn, dstConn net.Conn) {
 		// 加密数据
 		sslClientData := data_crypt.UpCompress(buff[:n], cfg.CommonConf.Crypt)
 
-		_, err = dstConn.Write(sslClientData)
+		_, err = conn2.Write(sslClientData)
 		if err != nil {
 			// fmt.Printf("sslClientServerProxy send all error: %v\n", err)
 			p.closeMyChain()
@@ -159,10 +183,10 @@ func (p *MyProxy) sslClientServerProxy(srcConn, dstConn net.Conn) {
 	}
 }
 
-func (p *MyProxy) sslServerClientProxy(srcConn, dstConn net.Conn) {
+func (p *MyProxy) sslProxy_crypt_none(conn1, conn2 net.Conn) {
 	buff := make([]byte, 4096)
 	for {
-		n, err := dstConn.Read(buff)
+		n, err := conn1.Read(buff)
 		if err != nil {
 			// fmt.Println("sslServerClientProxy read error:", err)
 			p.closeMyChain()
@@ -172,7 +196,7 @@ func (p *MyProxy) sslServerClientProxy(srcConn, dstConn net.Conn) {
 		// 解密数据
 		sslServerData := data_crypt.DownDecompress(buff[:n], cfg.CommonConf.Crypt)
 
-		_, err = srcConn.Write(sslServerData)
+		_, err = conn2.Write(sslServerData)
 		if err != nil {
 			// fmt.Printf("sslServerClientProxy send all error: %v\n", err)
 			p.closeMyChain()
@@ -218,6 +242,9 @@ func (p *MyProxy) getDstHostFromHeader() ([]byte, string, int, bool) {
 		line = line[:n]
 
 		header = append(header, line...)
+		if p.flag != 1 {
+			header = data_crypt.UpDecompressHeader(header, cfg.CommonConf.Crypt)
+		}
 		firstLine := strings.Split(string(header), "\n")[0]
 		// 检查是否是SSL连接
 		if strings.Contains(firstLine, "CONNECT") {

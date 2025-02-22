@@ -21,7 +21,7 @@ func (a *AccessToHost) Handler(conn net.Conn, addr net.Addr, port int) {
 		remotePort := string.StrToInt(cfg.LocalConf.RemoteIPs[0][2], 10090)
 		// 启动 Socks5 代理
 		go func() {
-			socks5 := NewMySocks5(conn, addr, remoteIP, remotePort)
+			socks5 := NewMySocks5(conn, addr, remoteIP, remotePort, 1)
 			socks5.Start()
 		}()
 		return
@@ -32,7 +32,7 @@ func (a *AccessToHost) Handler(conn net.Conn, addr net.Addr, port int) {
 		remotePort := string.StrToInt(cfg.LocalConf.RemoteIPs[1][2], 10090)
 		// 启动 Socks5 代理
 		go func() {
-			socks5 := NewMySocks5(conn, addr, remoteIP, remotePort)
+			socks5 := NewMySocks5(conn, addr, remoteIP, remotePort, 2)
 			socks5.Start()
 		}()
 		return
@@ -43,7 +43,7 @@ func (a *AccessToHost) Handler(conn net.Conn, addr net.Addr, port int) {
 		remotePort := string.StrToInt(cfg.LocalConf.RemoteIPs[0][1], 10089)
 		// 启动 Socks5 代理
 		go func() {
-			proxy := NewMyProxy(conn, remoteIP, remotePort)
+			proxy := NewMyProxy(conn, remoteIP, remotePort, 1)
 			proxy.Start()
 		}()
 		return
@@ -54,7 +54,7 @@ func (a *AccessToHost) Handler(conn net.Conn, addr net.Addr, port int) {
 		remotePort := string.StrToInt(cfg.LocalConf.RemoteIPs[1][1], 10089)
 		// 启动 Socks5 代理
 		go func() {
-			proxy := NewMyProxy(conn, remoteIP, remotePort)
+			proxy := NewMyProxy(conn, remoteIP, remotePort, 2)
 			proxy.Start()
 		}()
 		return

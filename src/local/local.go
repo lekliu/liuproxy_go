@@ -61,9 +61,9 @@ func RunServer(cfg1 *conf.AppConfig) {
 
 	// Start server threads
 	go startServerThread(cfg.LocalConf.PortHttpFirst)
-	go startServerThread(cfg.LocalConf.PortSocks5First)
-	go startServerThread(cfg.LocalConf.PortHttpSecond)
-	go startServerThread(cfg.LocalConf.PortSocks5Second)
+	//go startServerThread(cfg.LocalConf.PortSocks5First)
+	//go startServerThread(cfg.LocalConf.PortHttpSecond)
+	//go startServerThread(cfg.LocalConf.PortSocks5Second)
 
 	// 保持主线程运行
 	select {}
