@@ -11,9 +11,10 @@ type AppConfig struct {
 }
 
 type CommonConf struct {
-	MaxConnections int `ini:"maxConnections"`
-	BufferSize     int `ini:"bufferSize"`
-	Crypt          int `ini:"crypt"`
+	Mode           string `ini:"mode"`
+	MaxConnections int    `ini:"maxConnections"`
+	BufferSize     int    `ini:"bufferSize"`
+	Crypt          int    `ini:"crypt"`
 }
 
 type RemoteConf struct {
@@ -37,6 +38,7 @@ func LoadIni(cfg *AppConfig, fileName string) error {
 	}
 	// 获取 [common] 部分
 	commonSection := iniFile.Section("common")
+	cfg.CommonConf.Mode = commonSection.Key("mode").String()
 	cfg.CommonConf.MaxConnections = commonSection.Key("maxConnections").MustInt(16)
 	cfg.CommonConf.BufferSize = commonSection.Key("bufferSize").MustInt(1024)
 	cfg.CommonConf.Crypt = commonSection.Key("crypt").MustInt(125)

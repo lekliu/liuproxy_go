@@ -1,0 +1,31 @@
+# --- STAGE 1: Build (与远程版本完全相同) ---
+FROM golang:1.22-alpine AS builder
+WORKDIR /app
+COPY src/go.mod src/go.sum ./
+
+RUN go env -w GO111MODULE=on
+RUN go env -w GOPROXY=https://goproxy.cn,direct
+
+RUN go mod download
+COPY src/ .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -o /app/liuproxy ./main
+
+# --- STAGE 2: Production ---
+FROM alpine:latest
+WORKDIR /app
+
+# --- 关键区别：复制 local 模式的配置文件 ---
+COPY conf/config.local.ini /app/conf/config.ini
+
+COPY --from=builder /app/liuproxy .
+
+# --- 关键区别：暴露 local 模式监听的端口 ---
+# 根据 config.local.ini 中的配置，我们暴露 HTTP 和 SOCKS5 端口
+EXPOSE 8087
+# EXPOSE 8088
+# EXPOSE 18088
+# EXPOSE 11088
+
+# --- 关键区别：启动命令中指定正确的配置文件路径 ---
+# 确保 CMD 能找到我们复制进来的 config.ini
+CMD ["./liuproxy", "--config", "/app/conf/config.ini"]
