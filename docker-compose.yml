@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  remote:
+    image: lekliu/liuproxy-remote:v1.3
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: remote
+
+  local:
+    image: lekliu/liuproxy-local:v1.3
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: local
+    volumes:
+      # 格式: <本地路径>:<容器内路径>
+      - ./configs/local.ini:/app/configs/local.ini
+    ports:
+      - "127.0.0.1:8087:8087"
+      - "127.0.0.1:8088:8088"
+      - "127.0.0.1:8089:8089"
+      - "127.0.0.1:9087:9087"
+      - "127.0.0.1:9088:9088"
+      - "127.0.0.1:9089:9089"
