@@ -1,0 +1,4 @@
+
+// 生成aar脚本
+
+gomobile bind -x -target=android/arm64 -androidapi 21 -o D:\code\github\liuproxy\liuproxy_app\app\libs\liuproxy.aar ./mobile

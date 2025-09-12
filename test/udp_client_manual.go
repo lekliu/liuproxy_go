@@ -129,7 +129,6 @@ func main() {
 		// 解析最终目标地址
 		destAddr, err := net.ResolveUDPAddr("udp", targetAddr)
 		if err != nil {
-			log.Printf("无法解析目标地址: %v", err)
 			continue
 		}
 

@@ -2,14 +2,14 @@ version: '3.8'
 
 services:
   remote:
-    image: lekliu/liuproxy-remote:v1.3
+    image: lekliu/liuproxy-remote:v2.0
     build:
       context: .
       dockerfile: Dockerfile
       target: remote
 
   local:
-    image: lekliu/liuproxy-local:v1.3
+    image: lekliu/liuproxy-local:v2.0
     build:
       context: .
       dockerfile: Dockerfile

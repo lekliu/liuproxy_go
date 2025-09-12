@@ -1,84 +1,104 @@
+// --- START OF COMPLETE REPLACEMENT for config.go ---
 package config
 
 import (
-	ini "gopkg.in/ini.v1"
+	"fmt"
 	"os"
 	"strconv"
+	"strings"
+
+	"liuproxy_go/internal/types" // 导入统一的 types 包
+
+	ini "gopkg.in/ini.v1"
 )
 
-type AppConfig struct {
-	CommonConf `ini:"common"`
-	LocalConf  `ini:"local"`
-	RemoteConf `ini:"remote"`
-}
-
-type CommonConf struct {
-	Mode           string `ini:"mode"`
-	MaxConnections int    `ini:"maxConnections"`
-	BufferSize     int    `ini:"bufferSize"`
-	Crypt          int    `ini:"crypt"`
-}
-
-type RemoteConf struct {
-	PortHttpSvr   int `ini:"port_http_svr"`
-	PortSocks5Svr int `ini:"port_socks5_svr"`
-	PortWsSvr     int `ini:"port_ws_svr"`
-}
-
-type LocalConf struct {
-	PortHttpFirst    int `ini:"port_http_first"`
-	PortSocks5First  int `ini:"port_socks5_first"`
-	PortHttpWsFirst  int `ini:"port_http_ws_first"`
-	PortHttpSecond   int `ini:"port_http_second"`
-	PortSocks5Second int `ini:"port_socks5_second"`
-	PortHttpWsSecond int `ini:"port_http_ws_second"`
-	RemoteIPs        [][]string
-}
-
-func LoadIni(cfg *AppConfig, fileName string) error {
-	// 读取配置文件
+// LoadIni 从指定的 fileName 加载配置到传入的 types.Config 结构体中。
+func LoadIni(cfg *types.Config, fileName string) error {
 	iniFile, err := ini.Load(fileName)
 	if err != nil {
 		return err
 	}
-	// 获取 [common] 部分
-	commonSection := iniFile.Section("common")
-	cfg.CommonConf.Mode = commonSection.Key("mode").String()
-	cfg.CommonConf.MaxConnections = commonSection.Key("maxConnections").MustInt(16)
-	cfg.CommonConf.BufferSize = commonSection.Key("bufferSize").MustInt(1024)
-	cfg.CommonConf.Crypt = commonSection.Key("crypt").MustInt(125)
 
-	// 获取 [remote] 部分
-	remoteSection := iniFile.Section("remote")
-	cfg.RemoteConf.PortHttpSvr = remoteSection.Key("port_http_svr").MustInt(0)
-	cfg.RemoteConf.PortSocks5Svr = remoteSection.Key("port_socks5_svr").MustInt(0)
-	cfg.RemoteConf.PortWsSvr = remoteSection.Key("port_ws_svr").MustInt(0)
+	// 使用 MapTo 自动将 .ini 文件的 section 映射到 cfg 结构体的嵌入字段
+	if err := iniFile.MapTo(cfg); err != nil {
+		return err
+	}
 
-	// 获取 [local] 部分
+	// --- 手动解析 remote_ip_* 字段 ---
 	localSection := iniFile.Section("local")
-	cfg.LocalConf.PortHttpFirst = localSection.Key("port_http_first").MustInt(0)
-	cfg.LocalConf.PortSocks5First = localSection.Key("port_socks5_first").MustInt(0)
-	cfg.LocalConf.PortHttpWsFirst = localSection.Key("port_http_ws_first").MustInt(0)
-	cfg.LocalConf.PortHttpSecond = localSection.Key("port_http_second").MustInt(0)
-	cfg.LocalConf.PortSocks5Second = localSection.Key("port_socks5_second").MustInt(0)
-	cfg.LocalConf.PortHttpWsSecond = localSection.Key("port_http_ws_second").MustInt(0)
-
-	// 遍历所有以 remote_ip 开头的键
-	for _, key := range localSection.Keys() {
-		if len(key.Name()) >= 9 && key.Name()[:9] == "remote_ip" {
-			// 将值按逗号分割并存入结构体的二维数组
-			cfg.LocalConf.RemoteIPs = append(cfg.LocalConf.RemoteIPs, key.Strings(","))
+	rawRemoteIPs := [][][]string{} // 用一个三维数组来存储原始顺序和解析后的数据
+	for i, key := range localSection.Keys() {
+		if strings.HasPrefix(key.Name(), "remote_ip_") {
+			parts := key.Strings(",")
+			fullParts := make([]string, 8) // 确保总是有8个字段
+			copy(fullParts, parts)
+			// 存储原始索引和数据
+			rawRemoteIPs = append(rawRemoteIPs, [][]string{{strconv.Itoa(i)}, fullParts})
 		}
 	}
 
+	// 找到第一个被激活的服务器
+	activeIndex := -1
+	for i, entry := range rawRemoteIPs {
+		if len(entry[1]) > 7 && entry[1][7] == "true" {
+			activeIndex = i
+			break
+		}
+	}
+	// 重建 RemoteIPs 列表，将被激活的服务器（如果有）放在首位
+	cfg.LocalConf.RemoteIPs = [][]string{}
+	if activeIndex != -1 {
+		cfg.LocalConf.RemoteIPs = append(cfg.LocalConf.RemoteIPs, rawRemoteIPs[activeIndex][1])
+		rawRemoteIPs = append(rawRemoteIPs[:activeIndex], rawRemoteIPs[activeIndex+1:]...)
+	}
+
+	for _, entry := range rawRemoteIPs {
+		cfg.LocalConf.RemoteIPs = append(cfg.LocalConf.RemoteIPs, entry[1])
+	}
+
+	// 如果没有任何激活的，并且列表不为空，则将第一个设为激活状态（内存中）
+	if activeIndex == -1 && len(cfg.LocalConf.RemoteIPs) > 0 {
+		cfg.LocalConf.RemoteIPs[0][7] = "true"
+	}
+
 	overrideFromEnvInt(&cfg.CommonConf.Crypt, "CRYPT_KEY")
-	overrideFromEnvInt(&cfg.RemoteConf.PortHttpSvr, "REMOTE_PORT_HTTP_SVR")
-	overrideFromEnvInt(&cfg.RemoteConf.PortSocks5Svr, "REMOTE_PORT_SOCKS5_SVR")
+	overrideFromEnvInt(&cfg.RemoteConf.PortWsSvr, "REMOTE_PORT_WS_SVR")
 
 	return nil
 }
 
-// 辅助函数：从环境变量读取一个整数并覆盖传入的指针
+// SaveIni 将内存中的 types.Config 结构体保存回指定的 fileName。
+func SaveIni(cfg *types.Config, fileName string) error {
+	iniFile := ini.Empty()
+	err := ini.ReflectFrom(iniFile, cfg)
+	if err != nil {
+		return fmt.Errorf("failed to reflect config to ini object: %w", err)
+	}
+
+	localSection, err := iniFile.GetSection("local")
+	if err != nil {
+		localSection, _ = iniFile.NewSection("local")
+	}
+
+	// 清理旧的 remote_ip_* 键
+	for _, key := range localSection.KeyStrings() {
+		if strings.HasPrefix(key, "remote_ip_") {
+			localSection.DeleteKey(key)
+		}
+	}
+
+	// 写入新的 remote_ip_* 键
+	for i, remoteCfg := range cfg.LocalConf.RemoteIPs {
+		keyName := fmt.Sprintf("remote_ip_%02d", i+1)
+		fullCfg := make([]string, 8)
+		copy(fullCfg, remoteCfg)
+		localSection.Key(keyName).SetValue(strings.Join(fullCfg, ","))
+	}
+
+	return iniFile.SaveTo(fileName)
+}
+
+// overrideFromEnvInt 是一个私有辅助函数 (保持不变)
 func overrideFromEnvInt(target *int, envName string) {
 	envValue := os.Getenv(envName)
 	if envValue != "" {

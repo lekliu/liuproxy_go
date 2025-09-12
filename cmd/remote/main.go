@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"liuproxy_go/internal/types"
 	"log"
 
 	"liuproxy_go/internal/config"
@@ -13,12 +14,12 @@ func main() {
 	flag.Parse()
 
 	// 1. 加载配置
-	cfg := new(config.AppConfig)
+	cfg := new(types.Config)
 	if err := config.LoadIni(cfg, *configPath); err != nil {
 		log.Fatalf("Failed to load config file '%s': %v", *configPath, err)
 	}
 
 	// 2. 创建并运行服务器
-	appServer := server.New(cfg)
+	appServer := server.New(cfg, *configPath)
 	appServer.Run()
 }

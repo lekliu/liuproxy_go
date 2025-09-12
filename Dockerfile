@@ -1,5 +1,5 @@
 # --- STAGE 1: Build Stage ---
-FROM golang:1.22-alpine AS builder
+FROM golang:1.24-alpine AS builder
 WORKDIR /app
 
 # 复制模块文件并下载依赖
@@ -20,7 +20,7 @@ WORKDIR /app
 # 只复制 remote 的可执行文件和配置文件
 COPY --from=builder /app/bin/remote_server .
 COPY configs/remote.ini ./configs/remote.ini
-EXPOSE 10087 10088 10089
+EXPOSE 10089
 # 启动命令指向新的可执行文件和配置文件路径
 CMD ["./remote_server", "--config", "configs/remote.ini"]
 
@@ -31,5 +31,5 @@ WORKDIR /app
 # 只复制 local 的可执行文件和配置文件
 COPY --from=builder /app/bin/local_server .
 COPY configs/local.ini ./configs/local.ini
-EXPOSE 8087 8088 8089 9087 9088 9089
+EXPOSE 8080 9088
 CMD ["./local_server", "--config", "configs/local.ini"]

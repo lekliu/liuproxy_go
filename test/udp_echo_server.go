@@ -29,16 +29,8 @@ func main() {
 			log.Printf("读取错误: %v", err)
 			continue
 		}
-
-		// 打印收到的内容
-		log.Printf("收到来自 %s 的 %d 字节: %s", remoteAddr, n, string(buf[:n]))
-
 		// 将收到的数据原封不动地发回给源地址
-		_, err = conn.WriteToUDP(buf[:n], remoteAddr)
-		if err != nil {
-			log.Printf("写入错误: %v", err)
-		} else {
-			log.Printf("已将 %d 字节数据回显给 %s", n, remoteAddr)
-		}
+		conn.WriteToUDP(buf[:n], remoteAddr)
+
 	}
 }
