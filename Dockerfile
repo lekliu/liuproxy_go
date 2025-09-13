@@ -22,7 +22,8 @@ COPY --from=builder /app/bin/remote_server .
 COPY configs/remote.ini ./configs/remote.ini
 EXPOSE 10089
 # 启动命令指向新的可执行文件和配置文件路径
-CMD ["./remote_server", "--config", "configs/remote.ini"]
+#CMD ["./remote_server", "--config", "configs/remote.ini"]
+CMD ["sh", "-c", "printenv && ./remote_server --config configs/remote.ini"]
 
 ## --- STAGE 3: Local Image ---
 #FROM alpine:latest AS local
