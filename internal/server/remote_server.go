@@ -6,6 +6,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"strconv"
 
 	"liuproxy_go/internal/agent/socks5"
 	"liuproxy_go/internal/shared"
@@ -24,7 +26,20 @@ func (s *AppServer) runRemote() {
 	}
 	socksAgent.SetUDPRelay(udpRelay)
 
+	// 1. 从 .ini 文件读取默认端口
 	wsPort := s.cfg.RemoteConf.PortWsSvr
+
+	// 2. 检查 PORT 环境变量，这是 PaaS 平台的标准
+	envPort := os.Getenv("PORT")
+	if envPort != "" {
+		if p, err := strconv.Atoi(envPort); err == nil {
+			log.Printf("Found PORT environment variable: %s. Overriding port from config.", envPort)
+			wsPort = p // 使用环境变量提供的端口
+		} else {
+			log.Printf("WARNING: Invalid PORT environment variable '%s', using config value.", envPort)
+		}
+	}
+
 	if wsPort <= 0 {
 		log.Fatalln("Remote WebSocket port (port_ws_svr) is not configured.")
 		return

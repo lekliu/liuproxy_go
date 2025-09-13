@@ -1,4 +1,4 @@
-// --- START OF COMPLETE REPLACEMENT for tunnel_strategy.go ---
+// --- START OF COMPLETE REPLACEMENT for tunnel_strategy.go (REVERTED) ---
 package socks5
 
 import (
@@ -30,29 +30,45 @@ type BackendProfile struct {
 	Scheme  string
 	Path    string
 	EdgeIP  string
+	Active  bool
 }
 
 // CreateStrategyFromConfig 是一个工厂函数，根据配置创建并返回相应的策略实例。
 func CreateStrategyFromConfig(cfg *types.Config, profiles []*BackendProfile) (TunnelStrategy, error) {
 	log.Println("--- [StrategyFactory] DIAGNOSIS ---")
-	log.Printf("CreateStrategyFromConfig called with %d profiles:", len(profiles))
-	for i, p := range profiles {
-		log.Printf("  Profile[%d]: Type=%s, Remarks=%s, Address=%s", i, p.Type, p.Remarks, p.Address)
+	log.Printf("CreateStrategyFromConfig called with %d total profiles:", len(profiles))
+
+	var activeProfile *BackendProfile
+	for _, p := range profiles {
+		if p.Active {
+			activeProfile = p
+			break // 找到第一个激活的就停止
+		}
 	}
 
-	if len(profiles) == 0 {
+	// 如果没有找到任何激活的配置，则返回错误
+	if activeProfile == nil {
+		if len(profiles) > 0 {
+			// 如果有配置但没有一个被激活，这是个错误状态
+			return nil, fmt.Errorf("no active backend profile found in configuration")
+		}
+		// 如果连配置都没有，返回更明确的错误
 		return nil, fmt.Errorf("no backend profiles configured or enabled")
 	}
 
-	profile := profiles[0]
+	log.Printf("  >>> Active Profile Found: Type=%s, Remarks=%s, Address=%s", activeProfile.Type, activeProfile.Remarks, activeProfile.Address)
 
-	switch profile.Type {
+	// --- 关键修改: 现在总是使用 activeProfile ---
+	switch activeProfile.Type {
 	case "worker":
-		return NewWorkerStrategy(cfg, profile)
+		// Worker 策略只关心它自己的配置
+		return NewWorkerStrategy(cfg, activeProfile)
 	case "remote":
 		fallthrough
 	default:
-		return NewGoRemoteStrategy(cfg, profiles)
+		// GoRemote 策略现在也只接收它自己的配置
+		// 我们将其包装成一个只含有一个元素的切片来传递
+		return NewGoRemoteStrategy(cfg, []*BackendProfile{activeProfile})
 	}
 }
 

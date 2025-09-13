@@ -1,4 +1,4 @@
-// --- START OF COMPLETE REPLACEMENT for server.go ---
+// --- START OF COMPLETE REPLACEMENT for server.go (REVERTED) ---
 package server
 
 import (
@@ -80,6 +80,7 @@ func parseProfilesFromConfig(remoteIPs [][]string) []*socks5.BackendProfile {
 			Path:    remoteCfg[4],
 			Type:    remoteCfg[5],
 			EdgeIP:  remoteCfg[6],
+			Active:  remoteCfg[7] == "true",
 		})
 	}
 	return profiles
@@ -187,3 +188,5 @@ func (s *AppServer) ReloadStrategy() error {
 
 	return nil
 }
+
+// --- END OF COMPLETE REPLACEMENT ---
