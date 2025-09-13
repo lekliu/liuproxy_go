@@ -10,19 +10,15 @@ services:
     ports:
       - "127.0.0.1:10089:10089"
 
-#  local:
-#    image: lekliu/liuproxy-local:v2.0
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      target: local
-#    volumes:
-#      # 格式: <本地路径>:<容器内路径>
-#      - ./configs/local.ini:/app/configs/local.ini
-#    ports:
-#      - "127.0.0.1:8087:8087"
-#      - "127.0.0.1:8088:8088"
-#      - "127.0.0.1:8089:8089"
-#      - "127.0.0.1:9087:9087"
-#      - "127.0.0.1:9088:9088"
-#      - "127.0.0.1:9089:9089"
+  local:
+    image: lekliu/liuproxy-local:v2.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: local
+    volumes:
+      # 格式: <本地路径>:<容器内路径>
+      - ./configs/local.ini:/app/configs/local.ini
+    ports:
+      - "127.0.0.1:8081:8081"
+      - "127.0.0.1:9088:9088"
