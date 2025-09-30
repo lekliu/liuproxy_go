@@ -1,108 +1,88 @@
-// --- START OF COMPLETE REPLACEMENT for liuproxy_go/mobile/api.go ---
 package mobile
 
 import (
 	"encoding/json"
 	"fmt"
-	"liuproxy_go/internal/types"
-	"log"
-	"net"
-	"strings"
+	"liuproxy_go/internal/shared/logger"
+	"liuproxy_go/internal/tunnel"
 	"sync"
 
-	"liuproxy_go/internal/server"
+	"liuproxy_go/internal/shared/types"
 )
 
 var (
-	appServerInstance *server.AppServer
-	instanceMutex     sync.Mutex
+	// 全局变量，用于持有当前为移动端运行的唯一策略实例
+	activeStrategy types.TunnelStrategy
+	instanceMutex  sync.Mutex
 )
 
-// MobileConfig 用于解析从Android端传递过来的JSON配置
-type MobileConfig struct {
-	Key                      int    `json:"key"`
-	BufferSize               int    `json:"buffer_size"`
-	PreformattedServerString string `json:"preformatted_server_string"`
-}
-
-func init() {
-	// This helps distinguish Go logs in logcat
-	log.SetPrefix("[GoLiuProxy] ")
-}
-
 // StartVPN 启动 Go 核心的 local 代理逻辑。
-// 它会动态创建一个SOCKS5/HTTP统一监听器，并返回其监听的端口号。
-func StartVPN(configJSON string) (int64, error) {
+// 它接收一个服务器配置的JSON字符串，动态创建一个SOCKS5/HTTP统一监听器，并返回其监听的端口号。
+func StartVPN(profileJSON string) (int, error) {
 	instanceMutex.Lock()
 	defer instanceMutex.Unlock()
 
-	if appServerInstance != nil {
+	if activeStrategy != nil {
 		return 0, fmt.Errorf("service is already running")
 	}
 
-	log.Println("Configuring and starting Go core for mobile...")
-
-	// 1. 解析JSON配置
-	var mobileCfg MobileConfig
-	if err := json.Unmarshal([]byte(configJSON), &mobileCfg); err != nil {
-		return 0, fmt.Errorf("配置解析错误: %w", err)
+	// 1. 解析传入的 ServerProfile JSON
+	var profile types.ServerProfile
+	if err := json.Unmarshal([]byte(profileJSON), &profile); err != nil {
+		return 0, fmt.Errorf("failed to parse profile JSON: %w", err)
 	}
 
-	// 将接收到的字符串直接分割成 []string
-	serverParts := strings.Split(mobileCfg.PreformattedServerString, ",")
+	// 2. 强制设置profile为激活状态，并使用动态端口
+	profile.Active = true
+	profile.LocalPort = 0
 
-	// 验证字段数量
-	if len(serverParts) < 8 {
-		return 0, fmt.Errorf("preformatted_server_string must contain at least 8 elements, got %d", len(serverParts))
-	}
-
-	// 2. 根据解析出的配置构建Go核心所需的 types.Config
+	// 3. 构建一个最小化的配置，仅包含移动端必要的通用设置
 	cfg := &types.Config{
 		CommonConf: types.CommonConf{
 			Mode:           "local",
-			MaxConnections: 16,
-			BufferSize:     int(mobileCfg.BufferSize),
-			Crypt:          int(mobileCfg.Key),
+			MaxConnections: 32,   // Mobile specific value
+			BufferSize:     4096, // Mobile specific value
+			Crypt:          125,  // TODO: Should be part of the profile
 		},
-		LocalConf: types.LocalConf{
-			UnifiedPort: 0, // 动态选择端口
-			// 构建远程服务器配置数组
-			RemoteIPs: [][]string{
-				// 我们总是激活移动端传递的唯一配置
-				serverParts,
-			},
+		LogConf: types.LogConf{
+			Level: "debug", // Mobile defaults to debug log for better troubleshooting
 		},
 	}
 
-	// 3. 创建并启动服务器
-	appServer := server.New(cfg, "")
-	// --- Capture error from RunMobile more effectively ---
-	// RunMobile now directly returns the listener or an error.
-	listener, err := appServer.RunMobile()
+	// 4. 初始化日志系统
+	if err := logger.Init(cfg.LogConf); err != nil {
+		// 在日志系统失败时，回退到标准日志库
+		fmt.Printf("Fatal: Failed to initialize logger: %v\n", err)
+		return 0, fmt.Errorf("failed to initialize logger: %w", err)
+	}
+
+	logger.Info().Msg("Configuring and starting Go core for mobile...")
+
+	// 5. 使用策略工厂创建一个新的策略实例
+	newStrategy, err := tunnel.NewStrategy(cfg, []*types.ServerProfile{&profile})
 	if err != nil {
-		return 0, fmt.Errorf("failed to run mobile server: %w", err)
+		logger.Error().Err(err).Msg("Failed to create new strategy for mobile")
+		return 0, fmt.Errorf("failed to create strategy: %w", err)
 	}
 
-	// 4. 获取动态分配的端口
-	var unifiedPort int
-	if listener != nil && listener.PortType == "unified" {
-		if tcpAddr, ok := listener.Listener.Addr().(*net.TCPAddr); ok {
-			unifiedPort = tcpAddr.Port
-		} else {
-			appServer.Stop()
-			return 0, fmt.Errorf("listener is not a TCP listener")
-		}
-	} else {
-		appServer.Stop()
-		return 0, fmt.Errorf("could not find the unified listener after startup")
+	// 6. 初始化策略实例，这将启动其内部监听器
+	if err := newStrategy.Initialize(); err != nil {
+		logger.Error().Err(err).Msg("Failed to initialize strategy for mobile")
+		return 0, fmt.Errorf("failed to initialize strategy: %w", err)
 	}
 
-	// 5. 在后台等待服务器完全停止
-	go appServer.Wait()
+	// 7. 获取动态分配的端口信息
+	listenerInfo := newStrategy.GetListenerInfo()
+	if listenerInfo == nil || listenerInfo.Port == 0 {
+		newStrategy.CloseTunnel()
+		return 0, fmt.Errorf("strategy failed to start listener or return a valid port")
+	}
 
-	// 6. 保存实例并返回成功
-	appServerInstance = appServer
-	return int64(unifiedPort), nil
+	// 8. 保存实例引用并返回成功
+	activeStrategy = newStrategy
+	logger.Info().Int("port", listenerInfo.Port).Msgf("Go core started successfully, listening on port %d", listenerInfo.Port)
+
+	return listenerInfo.Port, nil
 }
 
 // StopVPN 停止 Go 核心。
@@ -110,10 +90,21 @@ func StopVPN() {
 	instanceMutex.Lock()
 	defer instanceMutex.Unlock()
 
-	if appServerInstance != nil {
-		appServerInstance.Stop()
-		appServerInstance = nil
+	if activeStrategy != nil {
+		logger.Info().Msg("Stopping Go core for mobile...")
+		activeStrategy.CloseTunnel()
+		activeStrategy = nil
+		logger.Info().Msg("Go core stopped.")
 	}
 }
 
-// --- END OF COMPLETE REPLACEMENT ---
+// GetStats (可选) 未来可以添加一个API用于从App查询流量统计
+// func GetStats() string {
+//     instanceMutex.Lock()
+//     defer instanceMutex.Unlock()
+//     if activeStrategy != nil {
+//         metrics := activeStrategy.GetMetrics()
+//         // format and return metrics as JSON string
+//     }
+//     return "{}"
+// }

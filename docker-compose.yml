@@ -1,24 +1,19 @@
 version: '3.9'
 
 services:
-  remote:
-    image: lekliu/liuproxy-remote:v2.0
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: remote
-    ports:
-      - "127.0.0.1:10089:10089"
-
   local:
-    image: lekliu/liuproxy-local:v2.0
+    image: lekliu/liuproxy-local:v2.1
+    container_name: liuproxy_local_service
     build:
       context: .
       dockerfile: Dockerfile
-      target: local
     volumes:
-      # 格式: <本地路径>:<容器内路径>
-      - ./configs/local.ini:/app/configs/local.ini
+      # 将本地的configs目录完整挂载到容器中
+      # 这样可以同时管理 local.ini 和未来的 servers.json
+      - ./configs:/app/configs
     ports:
+      # Web UI端口
       - "127.0.0.1:8081:8081"
+      # SOCKS5/HTTP 统一代理端口
       - "127.0.0.1:9088:9088"
+    restart: unless-stopped

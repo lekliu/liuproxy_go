@@ -1,0 +1,333 @@
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --background-color: #f8f9fa;
+    --surface-color: #ffffff;
+    --text-color: #212529;
+    --border-color: #dee2e6;
+    --active-color: #28a745;
+    --active-bg-color: #e9f5ec;
+    --label-width: 200px;
+    --status-up-color: #28a745;
+    --status-down-color: #dc3545;
+    --status-unknown-color: #ffc107;
+    --log-bg-color: #ffffff; /* 改为白色 */
+    --log-text-color: #212529; /* 改为深色文本 */
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-size: 15px;
+}
+
+.container {
+    max-width: 1100px; /* Widened for better layout */
+    margin: 0 auto;
+    background: var(--surface-color);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+/* --- 新增导航样式 --- */
+nav {
+    display: flex;
+    gap: 15px;
+}
+.nav-link {
+    text-decoration: none;
+    color: var(--secondary-color);
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.2s, color 0.2s;
+}
+.nav-link:hover {
+    background-color: #e9ecef;
+}
+.nav-link.active {
+    color: var(--primary-color);
+    background-color: #e7f1ff;
+}
+
+/* --- 新增主区域头部样式 --- */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.main-header h2, .main-header h4 {
+    margin: 0;
+    font-size: 1.3em;
+}
+
+/* --- 新增设置页面卡片样式 --- */
+#gateway-settings-form, #routing-settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.settings-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+}
+.settings-card h3 {
+    margin-top: 0;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+.radio-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.radio-group input[type="radio"] {
+    width: auto;
+}
+.radio-group label {
+    font-weight: normal;
+    text-align: left;
+}
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-family: "SF Mono", "Consolas", "Menlo", monospace;
+    font-size: 0.9em;
+    box-sizing: border-box;
+}
+.save-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+.save-btn:hover {
+    background-color: #0056b3;
+}
+.save-btn:disabled {
+    background-color: var(--secondary-color);
+    cursor: not-allowed;
+}
+.filter-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.filter-controls input, .filter-controls select {
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+th[data-sortable="true"] {
+    cursor: pointer;
+    user-select: none;
+}
+th[data-sortable="true"]:hover {
+    background-color: var(--background-color);
+}
+.sort-indicator {
+    display: inline-block;
+    margin-left: 5px;
+    color: var(--secondary-color);
+}
+
+
+
+#rules-table {
+    margin-top: 10px;
+}
+#rules-table td .actions {
+    min-width: auto;
+}
+.form-hint {
+    font-size: 0.8em;
+    color: var(--secondary-color);
+    margin-top: 5px;
+}
+.form-hint ul {
+    margin: 5px 0 0 15px;
+    padding-left: 10px;
+}
+
+h1 { margin: 0; font-size: 1.5em; }
+
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+#add-server-btn { background-color: var(--primary-color); color: white; }
+#add-server-btn:hover { background-color: #0056b3; }
+
+#add-rule-btn {
+    background-color: var(--primary-color);
+    color: white;
+    width: 300px;
+    padding: 8px 15px; /* Adjust padding to match filter controls height */
+}
+
+#add-rule-btn:hover {
+    background-color: #0056b3;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+th { font-weight: 600; }
+tbody tr.active-row { background-color: var(--active-bg-color); }
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.status-indicator.status-up { background-color: var(--status-up-color); }
+.status-indicator.status-down { background-color: var(--status-down-color); }
+.status-indicator.status-unknown { background-color: var(--status-unknown-color); }
+
+.actions {
+    white-space: nowrap;
+    min-width: 240px;
+}
+.actions button { margin-right: 5px; background: none; border: 1px solid var(--border-color); color: var(--secondary-color); }
+.actions button:hover { background-color: #f1f1f1; }
+.actions button.activate-btn { color: var(--primary-color); border-color: var(--primary-color); }
+.actions button.deactivate-btn { color: #dc3545; border-color: #dc3545; }
+
+dialog {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 25px;
+    width: 90%;
+    max-width: 850px;
+}
+
+dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
+
+form { display: flex; flex-direction: column; gap: 12px; }
+
+.form-row {
+    display: grid;
+    grid-template-columns: var(--label-width) 1fr;
+    gap: 15px;
+    align-items: center;
+}
+
+form label {
+    font-weight: 500;
+    text-align: right;
+    padding-right: 10px;
+}
+
+form input, form select {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-section hr { grid-column: 1 / -1; border: none; border-top: 1px solid var(--border-color); margin: 10px 0; }
+.form-section .fields-title { grid-column: 1 / -1; font-weight: bold; margin: 0; padding: 0; text-align: left; }
+
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; grid-column: 2;  }
+.dialog-actions button[type="submit"] { background-color: var(--primary-color); color: white; }
+.dialog-actions button[type="submit"]:hover { background-color: #0056b3; }
+
+.value-input-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+.value-input-group textarea {
+    flex-grow: 1;
+}
+.small-btn {
+    padding: 8px 12px;
+    font-size: 0.85em;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    color: var(--secondary-color);
+    flex-shrink: 0; /* Prevent the button from shrinking */
+}
+.small-btn:hover {
+    background-color: #e9ecef;
+}
+
+.log-panel {
+    margin-top: 20px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 15px;
+}
+
+.log-panel h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+
+.log-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.log-panel-header h2 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+#clear-log-btn {
+    padding: 5px 10px;
+    font-size: 0.8em;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+}
+
+#log-content {
+    background-color: var(--log-bg-color);
+    color: var(--log-text-color);
+    font-family: "SF Mono", "Consolas", "Menlo", monospace;
+    font-size: 0.85em;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    height: 200px;
+    overflow-y: scroll;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0;
+}

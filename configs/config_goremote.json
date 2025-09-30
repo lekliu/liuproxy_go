@@ -1,0 +1,10 @@
+{
+  "remarks": "Test GoRemote Server",
+  "type": "goremote",
+  "localPort": 1080,
+  "address": "tcp.us-west-1.clawcloudrun.com",
+  "port": 39031,
+  "scheme": "ws",
+  "path": "/tunnel",
+  "host": "tcp.us-west-1.clawcloudrun.com"
+}

@@ -3,7 +3,6 @@ package shared
 
 import (
 	"bytes"
-	"io"
 	"sync"
 )
 
@@ -38,12 +37,3 @@ func (b *ThreadSafeBuffer) Len() int {
 	defer b.mu.Unlock()
 	return b.b.Len()
 }
-
-// ReadFrom reads data from an io.Reader and writes to the buffer
-func (b *ThreadSafeBuffer) ReadFrom(r io.Reader) (int64, error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	return b.b.ReadFrom(r)
-}
-
-// --- END OF NEW FILE ---

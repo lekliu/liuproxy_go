@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SPLITTER_PROPORTION" value="0.3548665" />
+    <option name="ANALYZE_INJECTED_CODE" value="false" />
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c6dd1b00-27ef-41d2-b7c8-5f11ac2fafe7" name="Changes" comment="修改 docker-compose.yml 文件">
+      <change afterPath="$PROJECT_DIR$/DEPLOYMENT.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmd/tester/goremote/main.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmd/tester/vless/main.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmd/tester/vless2/main.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmd/tester/worker/main.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/config2_vless.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/config_goremote.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/config_vless.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/config_worker.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/appserver.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/core/dispatcher/dispatcher.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/core/dispatcher/dispatcher_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/core/dispatcher/sticky_manager.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/core/gateway/gateway.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/core/gateway/http.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/core/gateway/socks5.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/core/gateway/socks_client.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/core/gateway/virtual_strategy.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/core/health/checker.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/service/web/handler.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/service/web/server.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/service/web/static/api.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/service/web/static/app.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/service/web/static/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/service/web/static/settings.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/service/web/static/state.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/service/web/static/style.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/service/web/static/ui.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/shared/config/config.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/shared/logger/logger.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/shared/settings/manager.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/shared/settings/types.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/shared/types/config.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/shared/types/state.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/shared/types/types.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/factory.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/goremote/agent.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/goremote/dialer.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/goremote/helpers.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/goremote/session.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/goremote/socks5_handler.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/goremote/strategy.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/goremote/udp_manager.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/vless/decoder.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/vless/encoder.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/vless/handler.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/vless/handler_grpc.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/vless/handler_ws.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/vless/socks.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/vless/strategy.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/worker/agent.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/worker/dialer.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tunnel/worker/strategy.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/xray_core/common/errors/errors.generated.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prompt/Proposal.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prompt/ROADMAP.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/simple_client.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/simple_server.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/t1.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/local/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/local/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/remote/main.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/local.ini" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/remote.ini" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/agent.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/dns_resolver.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/helpers.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/http_handler.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/local_handler.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/local_session.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/local_session_manager.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/local_tunnel_manager.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/remote_handler.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/remote_session.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/remote_session_manager.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/remote_strategy.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/remote_tunnel.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/tunnel_strategy.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/types.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/udp_manager.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/udp_remote_relay.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/udp_session.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/tunnel/goremote/udp_session.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/agent/socks5/worker_strategy.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/config/config.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/core/crypt/crypt.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/core/crypt/crypt_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/core/securecrypt/cipher.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/shared/securecrypt/cipher.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/core/securecrypt/cipher_aesgcm.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/shared/securecrypt/cipher_aesgcm.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/core/securecrypt/cipher_chacha20.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/shared/securecrypt/cipher_chacha20.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/core/securecrypt/cipher_test.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/globalstate/state_manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/shared/globalstate/state_manager.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/protocol/protocol.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/shared/protocol/protocol.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/protocol/secure_io.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/shared/protocol/secure_io.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/server/local_server.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/server/remote_server.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/server/server.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/shared/buffer.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/shared/buffer.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/shared/conn_adapter.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/shared/conn_adapter.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/types/types.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/web/handler.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/web/server.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/web/static/app.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/web/static/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/web/static/style.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mobile/api.go" beforeDir="false" afterPath="$PROJECT_DIR$/mobile/api.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pkg/geoip/geoip.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prompt/ProjectVision.md" beforeDir="false" afterPath="$PROJECT_DIR$/prompt/ProjectVision.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prompt/progress.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prompt/project.md" beforeDir="false" afterPath="$PROJECT_DIR$/prompt/project.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/prompt/rules.md" beforeDir="false" afterPath="$PROJECT_DIR$/prompt/rules.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/go_encrypt_test/main.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/go_encrypt_test_aes/main.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/go_encrypt_test_std/main.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/cmd/remote/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/cmd/remote/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/internal/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/internal/config/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/internal/protocol/protocol.go" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/internal/protocol/protocol.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/internal/protocol/secure_io.go" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/internal/protocol/secure_io.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/internal/server/remote_server.go" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/internal/server/remote_server.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/internal/server/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/internal/server/server.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/internal/tunnel/agent.go" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/internal/tunnel/agent.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/internal/tunnel/dns_resolver.go" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/internal/tunnel/dns_resolver.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/internal/tunnel/remote_tunnel.go" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/internal/tunnel/remote_tunnel.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/internal/tunnel/session.go" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/internal/tunnel/session.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/internal/tunnel/session_manager.go" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/internal/tunnel/session_manager.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/internal/tunnel/udp_relay.go" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/internal/tunnel/udp_relay.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../liuproxy_remote/internal/types/types.go" beforeDir="false" afterPath="$PROJECT_DIR$/../liuproxy_remote/internal/types/types.go" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Dockerfile" />
+        <option value="JavaScript File" />
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../develop_tools/GoPath/pkg/mod/golang.org/toolchain@v0.0.1-go1.25.1.windows-amd64" />
+  <component name="Git.Settings">
+    <option name="PUSH_AUTO_UPDATE" value="true" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;lekliu&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/lekliu/liuproxy_go.git&quot;,
+    &quot;accountId&quot;: &quot;567a70d3-4108-4ee9-a532-9b31285aca0f&quot;
+  }
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/src/utils/data/data.go" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="2meTUb5S16YEqiBbXknXPiiQPiu" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "DefaultGoTemplateProperty": "Go File",
+    "Go Build.Local.executor": "Run",
+    "Go Build.go build connect_worker.go.executor": "Run",
+    "Go Build.go build liuproxy_go/test.executor": "Run",
+    "Go Build.go build local.go.executor": "Run",
+    "Go Build.go build main-web-server.go.executor": "Run",
+    "Go Build.go build main.go (1).executor": "Run",
+    "Go Build.go build main.go (2).executor": "Run",
+    "Go Build.go build main.go (3).executor": "Run",
+    "Go Build.go build main.go (4).executor": "Run",
+    "Go Build.go build main.go-local.executor": "Run",
+    "Go Build.go build main.go.executor": "Run",
+    "Go Build.go build main/local.executor": "Run",
+    "Go Build.go build main/main.executor": "Run",
+    "Go Build.go build remote.go.executor": "Run",
+    "Go Build.go build simple_client.go.executor": "Run",
+    "Go Build.go build simple_server.go.executor": "Run",
+    "Go Build.go build t1.go.executor": "Run",
+    "Go Build.go build test_connect.go.executor": "Run",
+    "Go Build.go build udp_client.go.executor": "Run",
+    "Go Build.go build udp_client_manual.go.executor": "Run",
+    "Go Build.go build udp_echo_server.go.executor": "Run",
+    "Go Build.goremote main.executor": "Run",
+    "Go Build.liuproxy_go/test_connect.executor": "Run",
+    "Go Build.local.run.executor": "Run",
+    "Go Build.remote main.executor": "Run",
+    "Go Build.remote.executor": "Run",
+    "Go Build.remote.run.executor": "Run",
+    "Go Build.vless main.executor": "Run",
+    "Go Build.vless main1.executor": "Run",
+    "Go Build.vless main2.executor": "Run",
+    "Go Test.TestCompressDecompress in main/utils/data.executor": "Run",
+    "Go Test.TestEncryptDecrypt in main/utils/data.executor": "Run",
+    "Go Test.TestLocal in main.executor": "Run",
+    "Go Test.TestLocal in main/main (1).executor": "Run",
+    "Go Test.TestLocal in main/main (2).executor": "Run",
+    "Go Test.TestLocal in main/main.executor": "Run",
+    "Go Test.TestRemote in main/main (2).executor": "Debug",
+    "Go Test.TestRemote in main/main.executor": "Run",
+    "Go Test.TestUpCompressHeader in main/utils/data.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "git-widget-placeholder": "main",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "D:/code/github/liuproxy/liuproxy_go/internal/xray_core/common/errors",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "terminal"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\code\github\liuproxy\liuproxy_go\internal\xray_core\common\errors" />
+      <recent name="D:\code\github\liuproxy\liuproxy_go\internal\goremote" />
+      <recent name="D:\code\github\liuproxy\liuproxy_go\cmd\tester" />
+      <recent name="D:\code\github\liuproxy\liuproxy_go\configs" />
+      <recent name="D:\code\github\liuproxy\liuproxy_go\internal\xray_core\proxy\vless" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\code\github\liuproxy\liuproxy_go\internal\shared" />
+      <recent name="D:\code\github\liuproxy\liuproxy_go\internal\tunnel\vless" />
+      <recent name="D:\code\github\liuproxy\liuproxy_go\internal\shared\protocol" />
+      <recent name="D:\code\github\liuproxy\liuproxy_go\internal\tunnel" />
+      <recent name="D:\code\github\liuproxy\liuproxy_go\internal\tunnel\goremote" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Go Build.Local">
+    <configuration name="Local" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true">
+      <module name="liuproxy_go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <package value="liuproxy_go" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/cmd/local/main.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build main.go (2)" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="liuproxy_go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <package value="liuproxy_go" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/cmd/tester/worker/main.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="liuproxy_go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <package value="liuproxy_go" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/cmd/tester/goremote/main.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="vless main1" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true">
+      <module name="liuproxy_go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <package value="liuproxy_go" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/cmd/tester/vless/main.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="vless main2" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true">
+      <module name="liuproxy_go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <package value="liuproxy_go" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/cmd/tester/vless2/main.go" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Go Build.vless main2" />
+      <item itemvalue="Go Build.go build main.go (2)" />
+      <item itemvalue="Go Build.go build main.go" />
+      <item itemvalue="Go Build.vless main1" />
+      <item itemvalue="Go Build.Local" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.Local" />
+        <item itemvalue="Go Build.vless main2" />
+        <item itemvalue="Go Build.vless main1" />
+        <item itemvalue="Go Build.go build main.go (2)" />
+        <item itemvalue="Go Build.go build main.go" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-gosdk-33c477a475b1-e0158606a674-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-241.18034.61" />
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-GO-241.18034.61" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TerminalProjectNonSharedOptionsProvider">
+    <envs>
+      <env key="JAVA_TOOL_OPTIONS" value="-Dfile.encoding=UTF-8" />
+    </envs>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.bat" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="增加docker部署能力" />
+    <MESSAGE value="修改 docker-compose.yml 文件" />
+    <option name="LAST_COMMIT_MESSAGE" value="修改 docker-compose.yml 文件" />
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/internal/xray_core/app/dispatcher/default.go</url>
+          <line>4</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

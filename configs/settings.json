@@ -1,0 +1,50 @@
+{
+  "gateway": {
+    "sticky_session_mode": "conditional",
+    "sticky_session_ttl": 300,
+    "sticky_rules": [
+      "*.google.com",
+      "baidu.com"
+    ],
+    "load_balancer_strategy": "round_robin"
+  },
+  "routing": {
+    "rules": [
+      {
+        "priority": 34,
+        "type": "domain",
+        "value": [
+          ".baidu.com",
+          ".fds.com",
+          ".ff.com"
+        ],
+        "target": "DIRECT"
+      },
+      {
+        "priority": 1,
+        "type": "source_ip",
+        "value": [
+          "192.148.3.3"
+        ],
+        "target": "cloudflare"
+      },
+      {
+        "priority": 99,
+        "type": "domain",
+        "value": [
+          ".yyy"
+        ],
+        "target": "DIRECT"
+      },
+      {
+        "priority": 65,
+        "type": "domain",
+        "value": [
+          ".gg"
+        ],
+        "target": "DIRECT"
+      }
+    ]
+  },
+  "logging": {}
+}
